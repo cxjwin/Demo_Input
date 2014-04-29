@@ -7,8 +7,8 @@
 //
 
 #import "AppDelegate.h"
-#import <objc/message.h>
 #import "GCDAsyncUdpSocket.h"
+#import "DemoViewController.h" 
 
 @interface AppDelegate ()
 
@@ -38,7 +38,10 @@
 		return NO;
 	}
 	
+    DemoViewController *viewController = [[DemoViewController alloc] init];
     self.window.backgroundColor = [UIColor whiteColor];
+    
+    self.window.rootViewController = viewController;
     [self.window makeKeyAndVisible];
 
     return YES;
@@ -51,24 +54,13 @@ withFilterContext:(id)filterContext {
 	NSString *msg = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
 	if (msg) {
 		NSLog(@"%@", msg);
-		SEL sel = NSSelectorFromString([msg stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]]);
-		if ([self respondsToSelector:sel]) {
-			objc_msgSend(self, sel);
-		}
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"KUDPMessage" object:msg];
 	} else {
 		NSString *host = nil;
 		uint16_t port = 0;
 		[GCDAsyncUdpSocket getHost:&host port:&port fromAddress:address];
 		NSLog(@"RECV: Unknown message from: %@:%hu", host, port);
 	}
-}
-
-- (void)test {
-	NSLog(@"haha.... ");
-}
-
-- (void)test2 {
-	NSLog(@"hoho... ");
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
