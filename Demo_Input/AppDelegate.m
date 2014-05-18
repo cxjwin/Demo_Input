@@ -47,10 +47,7 @@
     return YES;
 }
 
-- (void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data
-	  fromAddress:(NSData *)address
-withFilterContext:(id)filterContext {
-	
+- (void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data fromAddress:(NSData *)address withFilterContext:(id)filterContext {
 	NSString *msg = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
 	if (msg) {
 		NSLog(@"%@", msg);

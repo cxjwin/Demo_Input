@@ -11,6 +11,9 @@
 
 @interface DemoViewController () <UITableViewDataSource, UITableViewDelegate>
 
+// NSArray是线程安全的
+@property (copy, nonatomic) NSArray *dataSource;
+
 @property (nonatomic, strong) UITableView *tableView;
 
 @end
@@ -46,6 +49,7 @@
     [[ArrayManager sharedManager] addObserver:self forKeyPath:kArrayKey options:0 context:NULL];
     
     [ArrayManager sharedManager].realArray = [NSMutableArray arrayWithObjects:@(1), @(2), nil];
+    self.dataSource = [[ArrayManager sharedManager].realArray copy];
 }
 
 - (void)didReceiveMemoryWarning
@@ -57,13 +61,16 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
+    NSTimer *timer =
     [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(move) userInfo:nil repeats:YES];
+    NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
+    [runLoop addTimer:timer forMode:[runLoop currentMode]];
 }
 
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [[ArrayManager sharedManager].realArray count];
+    return [self.dataSource count];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -73,7 +80,7 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
     }
     
-    NSObject *obj = [[ArrayManager sharedManager].realArray objectAtIndex:indexPath.row];
+    NSObject *obj = [self.dataSource objectAtIndex:indexPath.row];
     
     cell.textLabel.text = [obj debugDescription];
     
@@ -82,8 +89,11 @@
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
     if ([keyPath isEqualToString:kArrayKey]) {
-        NSLog(@"%s", __func__);
-        [self.tableView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:[NSThread isMainThread]];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // 在主线程Copy一下
+            self.dataSource = [[ArrayManager sharedManager].realArray copy];
+            [self.tableView reloadData];
+        });
     }
 }
 

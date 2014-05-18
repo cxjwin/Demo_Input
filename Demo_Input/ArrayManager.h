@@ -16,6 +16,4 @@ extern NSString *const kArrayKey;
 
 + (instancetype)sharedManager;
 
-
-
 @end

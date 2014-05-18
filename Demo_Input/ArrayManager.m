@@ -94,7 +94,7 @@ NSString *const kArrayKey = @"array";
 static int num = 0;
 
 - (void)addObjects {
-    NSMutableArray *tempArray = [NSMutableArray array];
+    NSMutableArray *tempArray = [self.realArray mutableCopy];
     for (int i = 0; i < 10; ++i) {
         // [self.realArray addObject:[NSNumber numberWithInt:(++num)]];
         [tempArray addObject:[NSNumber numberWithInt:(++num)]];
